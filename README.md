@@ -7,4 +7,4 @@ curl
 grep
 
 # How to run
-sh btcscript.sh
+`sh btcscript.sh`

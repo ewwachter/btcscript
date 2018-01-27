@@ -8,3 +8,5 @@ grep
 
 # How to run
 `sh btcscript.sh`
+or to read in a loop and save to a file:
+`sh btc.sh <filename>`

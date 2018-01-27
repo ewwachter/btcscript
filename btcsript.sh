@@ -1,8 +1,102 @@
 #!/bin/sh
 
-# echo "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-# printf "\033[1;0f";
 
+get_price_kraken () {
+	# echo name: $1 addr: $2 curreny_conv: $3
+
+	EXCHANGE=$(curl -s  $2)
+	# KRA=$(curl -s  https://api.kraken.com/0/public/Ticker?pair=XBTUSD)
+	PRICE=$(echo $EXCHANGE | grep "\"c\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
+	while [ -z "$PRICE" ]; do
+		EXCHANGE=$(curl -s  $2)
+		PRICE=$(echo $EXCHANGE | grep "\"c\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
+		printf .
+		sleep 5
+	done
+	MIN=$(echo $EXCHANGE | grep "\"l\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
+	MAX=$(echo $EXCHANGE | grep "\"h\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
+	BRL=$(echo "scale=3;$PRICE*$3" | bc)
+	echo "\033[2K"$1 = $PRICE \($MIN - $MAX\) R\$ $BRL
+
+	local  __resultvar=$4
+	local  myresult=$PRICE
+	eval $__resultvar="'$myresult'"
+}
+
+
+get_price_bitfinex () {
+	EXCHANGE=$(curl -s $2)
+	PRICE=$(echo $EXCHANGE | grep "\"last_price\":\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
+	while [ -z "$PRICE" ]; do
+		EXCHANGE=$(curl -s $2)
+		PRICE=$(echo $EXCHANGE | grep "\"last_price\":\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
+		printf .
+		sleep 5
+	done
+	MIN=$(echo $EXCHANGE | grep "\"low\":\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
+	MAX=$(echo $EXCHANGE | grep "\"high\":\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
+	BRL=$(echo "scale=3;$PRICE*$3" | bc)
+	echo "\033[2K"$1 = $PRICE \($MIN - $MAX\) R\$ $BRL
+
+	local  __resultvar=$4
+	local  myresult=$PRICE
+	eval $__resultvar="'$myresult'"
+}
+
+get_price_negocie () {
+	EXCHANGE=$(curl -s $2)
+	PRICE=$(echo $EXCHANGE | grep -Eo "\"last\":[0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
+	while [ -z "$PRICE" ]; do
+		NEG=$(curl -s $2)
+		PRICE=$(echo $EXCHANGE | grep -Eo "\"last\":[0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
+		printf .
+		sleep 5
+	done
+	MIN=$(echo $EXCHANGE | grep -Eo "\"low\":[0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
+	MAX=$(echo $EXCHANGE | grep -Eo "\"high\":[0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
+	echo "\033[2K"$1 = $PRICE \($MIN - $MAX\)
+
+	local  __resultvar=$3
+	local  myresult=$PRICE
+	eval $__resultvar="'$myresult'"
+}
+
+get_price_foxbit () {
+	EXCHANGE=$(curl -s $2)
+	PRICE=$(echo $EXCHANGE | grep -Eo "\"last\": [0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
+	while [ -z "$PRICE" ]; do
+		EXCHANGE=$(curl -s $2)
+		PRICE=$(echo $EXCHANGE | grep -Eo "\"last\": [0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
+		printf .
+		sleep 5
+	done
+	MIN=$(echo $EXCHANGE | grep -Eo "\"low\": [0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
+	MAX=$(echo $EXCHANGE | grep -Eo "\"high\": [0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
+	echo "\033[2K"$1 = $PRICE \($MIN - $MAX\)
+
+	local  __resultvar=$3
+	local  myresult=$PRICE
+	eval $__resultvar="'$myresult'"
+}
+
+get_price_coinfloor () {
+	EXCHANGE=$(curl -s $2)
+	PRICE=$(echo $EXCHANGE | grep -Eo "\"last\":\"[0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
+	while [ -z "$PRICE" ]; do
+		EXCHANGE=$(curl -s $2)
+		PRICE=$(echo $EXCHANGE | grep -Eo "\"last\":\"[0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
+		printf .
+		sleep 5
+	done
+	MIN=$(echo $EXCHANGE | grep -Eo "\"low\":\"[0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
+	MAX=$(echo $EXCHANGE | grep -Eo "\"high\":\"[0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
+	BRL=$(echo "scale=3;$PRICE*$3" | bc)
+	echo "\033[2K"$1 = $PRICE \($MIN - $MAX\) R\$ $BRL
+
+	local  __resultvar=$4
+	local  myresult=$PRICE
+	eval $__resultvar="'$myresult'"
+}
 
 #transferwise exchange rate
 # TRWEURBRL=$(curl -s https://transferwise.com/gb/currency-converter/eur-to-brl-rate?amount=1000 | grep " data-rate=\"BRL\">" | grep "?[0-9]*\.[0-9]*" -Eo)
@@ -12,201 +106,53 @@
 #transferwise fee
 TRWFEE=0.02439
 
-
-while [ 1 ]; do
 	date
 
 	#exchange rate + transferwise fees
 	GOOUSDBRL=$(curl -s https://finance.google.com/finance?q=USDBRL | grep  "1 USD = " | grep "?[0-9]*\.[0-9]*" -Eo)
 	USDBRL=$(echo "scale=3;($GOOUSDBRL/(1-$TRWFEE))" | bc)
-	echo USD = $USDBRL
-
+	
 	GOOGBPBRL=$(curl -s https://finance.google.com/finance?q=GBPBRL | grep  "1 GBP = " | grep "?[0-9]*\.[0-9]*" -Eo)
 	GBPBRL=$(echo "scale=3;($GOOGBPBRL/(1-$TRWFEE))" | bc)
-	echo GBP = $GBPBRL
-
+	
 	GOOEURBRL=$(curl -s https://finance.google.com/finance?q=EURBRL | grep  "1 EUR = " | grep "?[0-9]*\.[0-9]*" -Eo)
 	EURBRL=$(echo "scale=3;($GOOEURBRL/(1-$TRWFEE))" | bc)
-	echo EUR = $EURBRL
+	echo "\033[2K"USD = $USDBRL GBP = $GBPBRL EUR = $EURBRL
 
 	# GOOGBPEUR=$(curl -s https://finance.google.com/finance?q=GBPEUR | grep  "1 GBP = " | grep "?[0-9]*\.[0-9]*" -Eo)
 	# GBPEUR=$(echo "scale=3;($GOOGBPEUR/(1-$TRWFEE))" | bc)
 	# echo GBPEUR = $GBPEUR
 
+	#get rates for GBP->EUR and EUR->USD
 	TRWGBPEUR=$(curl -s https://transferwise.com/gb/currency-converter/gbp-to-eur-rate?amount=1000 | grep " data-rate=\"EUR\">" | grep "?[0-9]*\.[0-9]*" -Eo)
-	echo GBPEUR = $TRWGBPEUR
+	TRWEURUSD=$(curl -s https://transferwise.com/gb/currency-converter/eur-to-usd-rate?amount=1000 | grep " data-rate=\"USD\">" | grep "?[0-9]*\.[0-9]*" -Eo)
+	echo "\033[2K"GBPEUR = $TRWGBPEUR EURUSD = $TRWEURUSD
 
-	# echo google USD = $GOOUSDBRL
-	# echo google GBP = $GOOGBPBRL
-	# echo google EUR = $GOOEURBRL
-
-	# echo TW USD = $TRWUSDBRL
-	# echo TW GBP = $TRWGBPBRL
-	# echo TW EUR = $TRWEURBRL
-
-	# echo TRWEURGBP = $TRWEURGBP
-	# echo GOOGBPEUR = $GOOGBPEUR
-
-
-	KRA=$(curl -s  https://api.kraken.com/0/public/Ticker?pair=XBTUSD)
-	KRABTCUSD=$(echo $KRA | grep "\"c\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-	while [ -z "$KRABTCUSD" ]; do
-		KRA=$(curl -s  https://api.kraken.com/0/public/Ticker?pair=XBTUSD)
-		KRABTCUSD=$(echo $KRA | grep "\"c\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-		sleep 5
-	done
-	KRABTCUSD_MIN=$(echo $KRA | grep "\"l\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-	KRABTCUSD_MAX=$(echo $KRA | grep "\"h\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-	KRABTCUSD_BRL=$(echo "scale=3;$KRABTCUSD*$USDBRL" | bc)
-	echo KRABTCUSD = $KRABTCUSD \($KRABTCUSD_MIN - $KRABTCUSD_MAX\) R\$ $KRABTCUSD_BRL
-
-	KRA=$(curl -s  https://api.kraken.com/0/public/Ticker?pair=XBTEUR)
-	KRABTCEUR=$(echo $KRA | grep "\"c\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-	while [ -z "$KRABTCEUR" ]; do
-		KRA=$(curl -s  https://api.kraken.com/0/public/Ticker?pair=XBTEUR)
-		KRABTCEUR=$(echo $KRA | grep "\"c\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-		sleep 5
-	done
-	KRABTCEUR_MIN=$(echo $KRA | grep "\"l\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-	KRABTCEUR_MAX=$(echo $KRA | grep "\"h\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-	KRABTCEUR_BRL=$(echo "scale=3;$KRABTCEUR*$EURBRL" | bc)
-	echo KRABTCEUR = $KRABTCEUR \($KRABTCEUR_MIN - $KRABTCEUR_MAX\) R\$ $KRABTCEUR_BRL
-	
-	BFN=$(curl -s  https://api.bitfinex.com/v1/pubticker/btcusd)
-	BFNLTCUSD=$(echo $BFN | grep "\"last_price\":\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-	while [ -z "$BFNLTCUSD" ]; do
-		BFN=$(curl -s  https://api.bitfinex.com/v1/pubticker/btcusd)
-		BFNLTCUSD=$(echo $BFN | grep "\"last_price\":\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-		sleep 5
-	done
-	BFNLTCUSD_MIN=$(echo $BFN | grep "\"low\":\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-	BFNLTCUSD_MAX=$(echo $BFN | grep "\"high\":\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-	BFNLTCUSD_BRL=$(echo "scale=3;$BFNLTCUSD*$USDBRL" | bc)
-	echo BFNLTCUSD = $BFNLTCUSD \($BFNLTCUSD_MIN - $BFNLTCUSD_MAX\) R\$ $BFNLTCUSD_BRL
-
-	COI=$(curl -s "https://webapi.coinfloor.co.uk:8090/bist/XBT/GBP/ticker/")
-	COIBTCGBP=$(echo $COI | grep -Eo "\"last\":\"[0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
-	while [ -z "$COIBTCGBP" ]; do
-		COI=$(curl -s "https://webapi.coinfloor.co.uk:8090/bist/XBT/GBP/ticker/")
-		COIBTCGBP=$(echo $COI | grep -Eo "\"last\":\"[0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
-		sleep 5
-	done
-	COIBTCGBP_MIN=$(echo $COI | grep -Eo "\"low\":\"[0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
-	COIBTCGBP_MAX=$(echo $COI | grep -Eo "\"high\":\"[0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
-	COIBTCGBP_BRL=$(echo "scale=3;$COIBTCGBP*$GBPBRL" | bc)
-	echo COIBTCGBP = $COIBTCGBP \($COIBTCGBP_MIN - $COIBTCGBP_MAX\) R\$ $COIBTCGBP_BRL
-	
-	FOX=$(curl -s "https://api.blinktrade.com/api/v1/BRL/ticker")
-	FOXBTCBRL=$(echo $FOX | grep -Eo "\"last\": [0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
-	while [ -z "$FOXBTCBRL" ]; do
-		FOX=$(curl -s "https://api.blinktrade.com/api/v1/BRL/ticker")
-		FOXBTCBRL=$(echo $FOX | grep -Eo "\"last\": [0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
-		sleep 5
-	done
-	FOXBTCBRL_MIN=$(echo $FOX | grep -Eo "\"low\": [0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
-	FOXBTCBRL_MAX=$(echo $FOX | grep -Eo "\"high\": [0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
-	echo FOXBTCBRL = $FOXBTCBRL \($FOXBTCBRL_MIN - $FOXBTCBRL_MAX\)
-
-	NEG=$(curl -s "https://broker.negociecoins.com.br/api/v3/BTCBRL/ticker")
-	NEGBTCBRL=$(echo $NEG | grep -Eo "\"last\":[0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
-	while [ -z "$NEGBTCBRL" ]; do
-		NEG=$(curl -s "https://broker.negociecoins.com.br/api/v3/BTCBRL/ticker")
-		NEGBTCBRL=$(echo $NEG | grep -Eo "\"last\":[0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
-		sleep 5
-	done
-	NEGBTCBRL_MIN=$(echo $NEG | grep -Eo "\"low\":[0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
-	NEGBTCBRL_MAX=$(echo $NEG | grep -Eo "\"high\":[0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
-	echo NEGBTCBRL = $NEGBTCBRL \($NEGBTCBRL_MIN - $NEGBTCBRL_MAX\)
-
-	echo -----------------------------
-
-	KRA=$(curl -s  https://api.kraken.com/0/public/Ticker?pair=BCHUSD)
-	KRABCHUSD=$(echo $KRA | grep "\"c\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-	while [ -z "$KRABCHUSD" ]; do
-		KRA=$(curl -s  https://api.kraken.com/0/public/Ticker?pair=BCHUSD)
-		KRABCHUSD=$(echo $KRA | grep "\"c\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-		sleep 5
-	done
-	KRABCHUSD_MIN=$(echo $KRA | grep "\"l\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-	KRABCHUSD_MAX=$(echo $KRA | grep "\"h\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-	KRABCHUSD_BRL=$(echo "scale=3;$KRABCHUSD*$USDBRL" | bc)
-	echo KRABCHUSD = $KRABCHUSD \($KRABCHUSD_MIN - $KRABCHUSD_MAX\) R\$ $KRABCHUSD_BRL
-
-	KRA=$(curl -s  https://api.kraken.com/0/public/Ticker?pair=BCHEUR)
-	KRABCHEUR=$(echo $KRA | grep "\"c\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-	while [ -z "$KRABCHEUR" ]; do
-		KRA=$(curl -s  https://api.kraken.com/0/public/Ticker?pair=BCHEUR)
-		KRABCHEUR=$(echo $KRA | grep "\"c\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-		sleep 5
-	done
-	KRABCHEUR_MIN=$(echo $KRA | grep "\"l\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-	KRABCHEUR_MAX=$(echo $KRA | grep "\"h\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-	KRABCHEUR_BRL=$(echo "scale=3;$KRABCHEUR*$EURBRL" | bc)
-	echo KRABCHEUR = $KRABCHEUR \($KRABCHEUR_MIN - $KRABCHEUR_MAX\) R\$ $KRABCHEUR_BRL
-
-	NEG=$(curl -s "https://broker.negociecoins.com.br/api/v3/BCHBRL/ticker")
-	NEGBCHBRL=$(echo $NEG | grep -Eo "\"last\":[0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
-	while [ -z "$NEGBCHBRL" ]; do
-		NEG=$(curl -s "https://broker.negociecoins.com.br/api/v3/BCHBRL/ticker")
-		NEGBCHBRL=$(echo $NEG | grep -Eo "\"last\":[0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
-		sleep 5
-	done
-	NEGBCHBRL_MIN=$(echo $NEG | grep -Eo "\"low\":[0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
-	NEGBCHBRL_MAX=$(echo $NEG | grep -Eo "\"high\":[0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
-	echo NEGBCHBRL = $NEGBCHBRL \($NEGBCHBRL_MIN - $NEGBCHBRL_MAX\)
-
-	echo -----------------------------
-
-	KRA=$(curl -s  https://api.kraken.com/0/public/Ticker?pair=ETHUSD)
-	KRAETHUSD=$(echo $KRA | grep "\"c\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-	while [ -z "$KRAETHUSD" ]; do
-		KRA=$(curl -s  https://api.kraken.com/0/public/Ticker?pair=ETHUSD)
-		KRAETHUSD=$(echo $KRA | grep "\"c\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-		sleep 5
-	done
-	KRAETHUSD_MIN=$(echo $KRA | grep "\"l\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-	KRAETHUSD_MAX=$(echo $KRA | grep "\"h\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-	KRAETHUSD_BRL=$(echo "scale=3;$KRAETHUSD*$USDBRL" | bc)
-	echo KRAETHUSD = $KRAETHUSD \($KRAETHUSD_MIN - $KRAETHUSD_MAX\) R\$ $KRAETHUSD_BRL
-
-	echo -----------------------------
-
-	KRA=$(curl -s  https://api.kraken.com/0/public/Ticker?pair=LTCUSD)
-	KRALTCUSD=$(echo $KRA | grep "\"c\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-	while [ -z "$KRALTCUSD" ]; do
-		KRA=$(curl -s  https://api.kraken.com/0/public/Ticker?pair=LTCUSD)
-		KRALTCUSD=$(echo $KRA | grep "\"c\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-		sleep 5
-	done
-	KRALTCUSD_MIN=$(echo $KRA | grep "\"l\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-	KRALTCUSD_MAX=$(echo $KRA | grep "\"h\":\[\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-	KRALTCUSD_BRL=$(echo "scale=3;$KRALTCUSD*$USDBRL" | bc)
-	echo KRALTCUSD = $KRALTCUSD \($KRALTCUSD_MIN - $KRALTCUSD_MAX\) R\$ $KRALTCUSD_BRL
-
-	BFN=$(curl -s  https://api.bitfinex.com/v1/pubticker/ltcusd)
-	BFNLTCUSD=$(echo $BFN | grep "\"last_price\":\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-	while [ -z "$BFNLTCUSD" ]; do
-		BFN=$(curl -s  https://api.bitfinex.com/v1/pubticker/ltcusd)
-		BFNLTCUSD=$(echo $BFN | grep "\"last_price\":\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-		sleep 5
-	done
-	BFNLTCUSD_MIN=$(echo $BFN | grep "\"low\":\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-	BFNLTCUSD_MAX=$(echo $BFN | grep "\"high\":\"?[0-9]*\.?[0-9]{1}" -Eo | grep "?[0-9]*\.?[0-9]*" -Eo)
-	BFNLTCUSD_BRL=$(echo "scale=3;$BFNLTCUSD*$USDBRL" | bc)
-	echo BFNLTCUSD = $BFNLTCUSD \($BFNLTCUSD_MIN - $BFNLTCUSD_MAX\) R\$ $BFNLTCUSD_BRL
-
-	NEG=$(curl -s "https://broker.negociecoins.com.br/api/v3/LTCBRL/ticker")
-	NEGLTCBRL=$(echo $NEG | grep -Eo "\"last\":[0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
-	while [ -z "$NEGLTCBRL" ]; do
-		NEG=$(curl -s "https://broker.negociecoins.com.br/api/v3/LTCBRL/ticker")
-		NEGLTCBRL=$(echo $NEG | grep -Eo "\"last\":[0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
-		sleep 5
-	done
-	NEGLTCBRL_MIN=$(echo $NEG | grep -Eo "\"low\":[0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
-	NEGLTCBRL_MAX=$(echo $NEG | grep -Eo "\"high\":[0-9]{1,5}.[0-9]" | grep -Eo "[0-9]{1,5}.[0-9]")
-	echo NEGLTCBRL = $NEGLTCBRL \($NEGLTCBRL_MIN - $NEGLTCBRL_MAX\)
-
-	echo -----------------------------
+	get_price_kraken "KRABTCUSD" "https://api.kraken.com/0/public/Ticker?pair=XBTUSD" "$USDBRL" KRABTCUSD
+	get_price_bitfinex "BFNBTCUSD" "https://api.bitfinex.com/v1/pubticker/btcusd" "$USDBRL" BFNBTCUSD
+	get_price_kraken "KRABTCEUR" "https://api.kraken.com/0/public/Ticker?pair=XBTEUR" "$EURBRL" KRABTCEUR
+	get_price_coinfloor "COIBTCGBP" "https://webapi.coinfloor.co.uk:8090/bist/XBT/GBP/ticker/" "$GBPBRL" COIBTCGBP
+	get_price_foxbit "FOXBTCBRL" "https://api.blinktrade.com/api/v1/BRL/ticker" FOXBTCBRL
+	get_price_negocie "NEGBTCBRL" "https://broker.negociecoins.com.br/api/v3/BTCBRL/ticker" NEGBTCBRL
+	echo "\033[2K"-----------------------------
+	get_price_kraken "KRABCHUSD" "https://api.kraken.com/0/public/Ticker?pair=BCHUSD" "$USDBRL" KRABCHUSD
+	get_price_bitfinex "BFNBCHUSD" "https://api.bitfinex.com/v1/pubticker/bchusd" "$USDBRL" BFNBCHUSD
+	get_price_kraken "KRABCHEUR" "https://api.kraken.com/0/public/Ticker?pair=BCHEUR" "$EURBRL" KRABCHEUR
+	get_price_negocie "NEGBCHBRL" "https://broker.negociecoins.com.br/api/v3/BCHBRL/ticker" NEGBCHBRL
+	echo "\033[2K"-----------------------------
+	get_price_kraken "KRAETHUSD" "https://api.kraken.com/0/public/Ticker?pair=ETHUSD" "$USDBRL" KRAETHUSD
+	echo "\033[2K"-----------------------------
+	get_price_kraken "KRALTCUSD" "https://api.kraken.com/0/public/Ticker?pair=LTCUSD" "$USDBRL" KRALTCUSD
+	get_price_bitfinex "BFNLTCUSD" "https://api.bitfinex.com/v1/pubticker/ltcusd" "$USDBRL" BFNLTCUSD
+	get_price_negocie "NEGLTCBRL" "https://broker.negociecoins.com.br/api/v3/LTCBRL/ticker" NEGLTCBRL
+	echo "\033[2K"-----------------------------
+	get_price_bitfinex "BFNXRPUSD" "https://api.bitfinex.com/v1/pubticker/xrpusd" "$USDBRL" BFNXRPUSD
+	echo "\033[2K"-----------------------------
+	get_price_bitfinex "BFNIOTUSD" "https://api.bitfinex.com/v1/pubticker/iotusd" "$USDBRL" BFNIOTUSD
+	echo "\033[2K"-----------------------------
+	get_price_bitfinex "BFNBTGUSD" "https://api.bitfinex.com/v1/pubticker/btgusd" "$USDBRL" BFNBTGUSD
+	get_price_negocie "NEGBTGBRL" "https://broker.negociecoins.com.br/api/v3/BTGBRL/ticker" NEGBTGBRL
+	echo "\033[2K"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	BTCFOXBRLUSD=$(echo "scale=3;$FOXBTCBRL/$KRABTCUSD" | bc)
 	BTCNEGBRLUSD=$(echo "scale=3;$NEGBTCBRL/$KRABTCUSD" | bc)
@@ -220,6 +166,8 @@ while [ 1 ]; do
 
 	LTCNEGBRLUSD=$(echo "scale=3;$NEGLTCBRL/$KRALTCUSD" | bc)
 	# LTCNEGBRLEUR=$(echo "scale=3;$NEGLTCBRL/$KRALTCEUR" | bc)
+
+	BTGNEGBRLUSD=$(echo "scale=3;$NEGBTGBRL/$BFNBTGUSD" | bc)
 
 	PCTFOXUSD=$(echo "scale=3;100*(($BTCFOXBRLUSD/$USDBRL)-1)" | bc)
 	PCTNEGUSD=$(echo "scale=3;100*(($BTCNEGBRLUSD/$USDBRL)-1)" | bc)
@@ -239,32 +187,22 @@ while [ 1 ]; do
 	PCT_LTC_NEGUSD=$(echo "scale=3;100*(($LTCNEGBRLUSD/$USDBRL)-1)" | bc)
 	# PCT_BCH_NEGEUR=$(echo "scale=3;100*(($BCHNEGBRLEUR/$EURBRL)-1)" | bc)
 
-	echo BTCFOXBRLUSD = $BTCFOXBRLUSD \(${PCTFOXUSD}\%\)
-	echo BTCNEGBRLUSD = $BTCNEGBRLUSD \(${PCTNEGUSD}\%\)
+	PCT_BTG_NEGUSD=$(echo "scale=3;100*(($BTGNEGBRLUSD/$USDBRL)-1)" | bc)
 
-	echo BTCFOXBRLGBP = $BTCFOXBRLGBP \(${PCTFOXGBP}\%\)
-	echo BTCNEGBRLGBP = $BTCNEGBRLGBP \(${PCTNEGGBP}\%\)
+	echo "\033[2K"BTCFOXBRLUSD = $BTCFOXBRLUSD \(${PCTFOXUSD}\%\)
+	echo "\033[2K"BTCNEGBRLUSD = $BTCNEGBRLUSD \(${PCTNEGUSD}\%\)
 
-	echo BTCFOXBRLEUR = $BTCFOXBRLEUR \(${PCTFOXEUR}\%\)
-	echo BTCNEGBRLEUR = $BTCNEGBRLEUR \(${PCTNEGEUR}\%\)
-	echo -----------------------------
-	echo BCHNEGBRLUSD = $BCHNEGBRLUSD \(${PCT_BCH_NEGUSD}\%\)
-	echo BCHNEGBRLEUR = $BCHNEGBRLEUR \(${PCT_BCH_NEGEUR}\%\)
-	echo -----------------------------
-	echo LTCNEGBRLUSD = $LTCNEGBRLUSD \(${PCT_LTC_NEGUSD}\%\)
-	# echo LTCNEGBRLEUR = $BCHNEGBRLEUR \(${PCT_BCH_NEGEUR}\%\)
-	echo =============================
+	echo "\033[2K"BTCFOXBRLGBP = $BTCFOXBRLGBP \(${PCTFOXGBP}\%\)
+	echo "\033[2K"BTCNEGBRLGBP = $BTCNEGBRLGBP \(${PCTNEGGBP}\%\)
 
-	#go to te corner of screen
-	# printf "\033[0;0f";
-	#Move the cursor up 34 lines:
-	printf "\033[34A"
-	# Move the cursor backward 28 columns:
-	# printf "\033[28"
-
-	sleep 60
-done
-
-
-
+	echo "\033[2K"BTCFOXBRLEUR = $BTCFOXBRLEUR \(${PCTFOXEUR}\%\)
+	echo "\033[2K"BTCNEGBRLEUR = $BTCNEGBRLEUR \(${PCTNEGEUR}\%\)
+	echo "\033[2K"-----------------------------
+	echo "\033[2K"BCHNEGBRLUSD = $BCHNEGBRLUSD \(${PCT_BCH_NEGUSD}\%\)
+	echo "\033[2K"BCHNEGBRLEUR = $BCHNEGBRLEUR \(${PCT_BCH_NEGEUR}\%\)
+	echo "\033[2K"-----------------------------
+	echo "\033[2K"LTCNEGBRLUSD = $LTCNEGBRLUSD \(${PCT_LTC_NEGUSD}\%\)
+	echo "\033[2K"-----------------------------
+	echo "\033[2K"BTGNEGBRLUSD = $BTGNEGBRLUSD \(${PCT_BTG_NEGUSD}\%\)
+	echo "\033[2K"=============================
 
